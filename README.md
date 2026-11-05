@@ -1,20 +1,23 @@
 # Student Management CRUD Application
 
-A full-stack Student Management CRUD application featuring a **Spring Boot REST API** backend and a modern **Vite + React (JavaScript) + Tailwind CSS** frontend.
+A full-stack Student Management CRUD application featuring a **Spring Boot REST API** backend and a modern **Vite + React (JavaScript) + Tailwind CSS** frontend, ready for deployment on **Render.com**.
 
 ---
 
 ## Architecture Overview
 
 - **Backend** (`./student`):
-  - Java 17+ / Spring Boot 3.x
+  - Java 21 / Spring Boot 3.x
   - Spring Data JPA + Hibernate with PostgreSQL (`db_student`)
-  - Endpoints mapped to `/concepcion/students`
+  - Multi-stage Docker containerization (`Dockerfile`)
+  - Endpoints mapped to `/concepcion/students` with `@CrossOrigin(origins = "*")`
 - **Frontend** (`./frontend`):
   - Vite + React (JavaScript)
   - Tailwind CSS utility styling
   - **Strictly No Modals**: Integrated Card Form with dual Create/Edit mode, real-time search, and safe two-step inline delete confirmations.
-  - Reverse proxy configured via `vite.config.js` to route API requests to `http://localhost:8080`.
+  - Dynamic API resolution: Uses `VITE_API_BASE_URL` in production; uses Vite proxy in local dev.
+- **Infrastructure as Code** (`render.yaml`):
+  - Blueprint defining `student-backend` (Docker), `student-frontend` (Static Site), and `student-db` (PostgreSQL).
 
 ---
 
@@ -42,38 +45,48 @@ A full-stack Student Management CRUD application featuring a **Spring Boot REST 
 
 ---
 
-## How to Run the Application
+## Deploying to Render.com (Blueprint Guide)
+
+This repository includes a `render.yaml` specification for 1-click Render Blueprint deployment.
+
+### Steps:
+1. **Push to GitHub**:
+   Ensure all changes are committed and pushed to your GitHub repository:
+   ```powershell
+   git add .
+   git commit -m "Prepare for Render.com deployment"
+   git push origin main
+   ```
+2. **Log in to Render**:
+   - Go to [dashboard.render.com](https://dashboard.render.com).
+3. **Create New Blueprint Instance**:
+   - Click **New +** ➔ **Blueprint**.
+   - Connect your GitHub repository (`student_crud`).
+   - Render will automatically parse `render.yaml` and discover:
+     - `student-db` (PostgreSQL Database)
+     - `student-backend` (Web Service via Docker)
+     - `student-frontend` (Static Site via Vite build)
+4. **Deploy**:
+   - Click **Apply**.
+   - Render provisions the database, builds the Docker image for the backend, compiles the frontend static assets, and connects them automatically!
+
+---
+
+## Running Locally
 
 ### 1. Start PostgreSQL
-Ensure PostgreSQL is running locally with the database `db_student` (credentials in `student/src/main/resources/application.properties`):
-- Port: `5432`
-- User: `postgres`
-- Password: `admin`
-- Database: `db_student`
+Ensure PostgreSQL is running locally with database `db_student`:
+- Port: `5432`, User: `postgres`, Password: `admin`, Database: `db_student`
 
-### 2. Start the Spring Boot Backend
-Open a terminal in the root directory:
+### 2. Start the Backend
 ```powershell
 cd student
 .\gradlew.bat bootRun
 ```
-The backend starts on `http://localhost:8080`.
 
-### 3. Start the Frontend (Vite + React)
-Open a second terminal in the root directory:
+### 3. Start the Frontend
 ```powershell
 cd frontend
 npm.cmd run dev
 ```
-Open your browser at `http://localhost:5173`.
-All requests to `/concepcion/students` will be seamlessly proxied to the backend on port 8080.
-
----
-
-## Frontend Key Features
-
-- **Inline Card Form (No Modals)**: Fill out and submit student details directly on the page. Clicking "Edit" on any table row populates the form, enables "Editing Mode", and scrolls directly to the inputs.
-- **Two-Step Inline Deletion (No Modals)**: Clicking "Delete" toggles a row confirmation (`[Delete?] [Yes, Delete] [Cancel]`), preventing accidental deletions without intrusive popups.
-- **Real-Time Search & Filtering**: Instantly filter table records across First Name, Last Name, Course, Section, and Student ID.
-- **Responsive Layout**: Two-column layout on large screens with sticky form; cleanly stacks on tablets and mobile screens.
-- **Toast Notifications**: Non-intrusive alerts for create, update, and delete actions.
+Open `http://localhost:5173`.
